@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD com Fetch API</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CRUD com Fetch API</h1>
+        
+        <p>
+            Este projeto foi desenvolvido para praticar o uso da Fetch API em operações de CRUD (Create, Read, Update, Delete) com JavaScript puro. Utilizamos a API pública JSONPlaceholder para simular essas operações com posts. Cada função em JavaScript realiza uma operação específica:
+            <ul>
+                <li><strong>Carregar Posts</strong>: Recupera os posts da API e exibe no navegador.</li>
+                <li><strong>Criar Novo Post</strong>: Envia um novo post para a API e adiciona à lista de posts.</li>
+                <li><strong>Atualizar Último Post</strong>: Atualiza o último post criado.</li>
+                <li><strong>Deletar Último Post</strong>: Remove o último post criado da API e da lista.</li>
+            </ul>
+            A interface é responsiva e foi criada usando variáveis CSS para facilitar a manutenção e mudanças de cores.
+        </p>
+        
+        <button onclick="fetchPosts()">Carregar Posts</button>
+        <button onclick="createPost()">Criar Novo Post</button>
+        <button onclick="updateLastPost()">Atualizar Último Post</button>
+        <button onclick="deleteLastPost()">Deletar Último Post</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <footer>
+        <p>Feito por Lucas Pontual e Felipe Roque</p>
+    </footer>
+    
+    <script src="main.js"></script>
+</body>
+</html>
