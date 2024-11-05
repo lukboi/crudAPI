@@ -1,169 +1,156 @@
-// Aguarda o carregamento completo do DOM
-document.addEventListener("DOMContentLoaded", function() {
-    // Declaração das variáveis globais
-    const output = document.getElementById("output");
-    const statusMessage = document.createElement("div");
-    let lastPostId = null; // Armazena o ID do último post criado
-    let localIdCounter = 201; // Contador para IDs únicos locais (começando em 201)
-    
-    // Função para exibir mensagens de status na tela
-    function showStatus(message, type = "success") {
-        statusMessage.textContent = message;
-        statusMessage.className = type === "error" ? "alert error" : "alert success";
-        setTimeout(() => { statusMessage.textContent = ""; }, 3000); // Limpa a mensagem após 3 segundos
+// Variável global para armazenar o Pokémon atual
+let currentPokemon = null;
+
+// Variável para contar o número de cliques
+let clickCount = 0;
+
+document.getElementById('gerar-pokemon').addEventListener('click', gerarPokemon);
+
+// Adicionar event listener ao checkbox para alternar entre versões
+document.getElementById('toggle-shiny').addEventListener('change', toggleShiny);
+
+function gerarPokemon() {
+    // Incrementa o contador de cliques
+    clickCount++;
+    console.log(clickCount);
+
+    // Verifica se o contador atingiu 20 cliques
+    if (clickCount === 20) {
+        mostrarEasterEgg();
     }
-    
-    // Função para buscar e mostrar os posts (READ)
-    function fetchPosts() {
-        fetch('https://jsonplaceholder.typicode.com/posts')
-            .then(response => response.json())
-            .then(posts => {
-                output.innerHTML = "<h2>Posts:</h2>";
-                posts.forEach(post => {
-                    const postElement = document.createElement("div");
-                    postElement.className = "post";
-                    postElement.setAttribute("data-id", post.id);
-                    postElement.innerHTML = `<h3>ID ${post.id}: ${post.title}</h3><p>${post.body}</p>`;
-                    output.appendChild(postElement);
-                });
-            })
-            .catch(error => {
-                console.error("Erro ao buscar posts:", error);
-                showStatus("Erro ao buscar posts", "error");
-            });
-    }
-    
-    // Função para criar um novo post (CREATE)
-    function createPost() {
-        console.log("Valor de localIdCounter:", localIdCounter); // Verificar se a variável está acessível
-        const newPost = {
-            title: `Novo Post ${localIdCounter}`,
-            body: "Este é o corpo do novo post",
-            userId: 1,
-            id: localIdCounter // Atribui um ID único local
-        };
-    
-        fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newPost)
-        })
+
+    const pokemonId = Math.floor(Math.random() * 151) + 1; // IDs de 1 a 151
+    const apiUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+
+    fetch(apiUrl)
         .then(response => response.json())
-        .then(post => {
-            // Atualiza o ID do post com o ID local
-            post.id = localIdCounter;
-    
-            const postElement = document.createElement("div");
-            postElement.className = "post";
-            postElement.setAttribute("data-id", post.id);
-            postElement.innerHTML = `<h3>ID ${post.id}: ${post.title}</h3><p>${post.body}</p>`;
-            output.prepend(postElement); // Adiciona o novo post ao início da lista
-            lastPostId = post.id; // Armazena o ID do último post criado
-            localIdCounter++; // Incrementa o contador de IDs locais
-            showStatus("Post criado com sucesso!");
+        .then(data => {
+            currentPokemon = data; // Armazena o Pokémon atual
+            mostrarPokemon();
         })
         .catch(error => {
-            console.error("Erro ao criar post:", error);
-            showStatus("Erro ao criar post", "error");
+            console.error('Erro ao obter dados do Pokémon:', error);
         });
+}
+
+function mostrarPokemon() {
+    if (!currentPokemon) return; // Se não houver um Pokémon atual, não faz nada
+
+    const pokemonCard = document.getElementById('pokemon-card');
+    pokemonCard.innerHTML = '';
+    pokemonCard.className = ''; // Remove classes anteriores
+
+    const nome = currentPokemon.name;
+    const types = currentPokemon.types.map(typeInfo => typeInfo.type.name);
+
+    // Adiciona a classe do tipo principal do Pokémon ao card
+    pokemonCard.classList.add(types[0]);
+
+    // Obter o valor do checkbox shiny
+    const isShiny = document.getElementById('toggle-shiny').checked;
+
+    // Selecionar a imagem adequada
+    let imagem;
+    if (isShiny && currentPokemon.sprites.front_shiny) {
+        imagem = currentPokemon.sprites.front_shiny;
+    } else {
+        imagem = currentPokemon.sprites.front_default;
     }
-    
-    // Função para atualizar o último post criado (UPDATE)
-    function updateLastPost() {
-        if (lastPostId == null) {
-            showStatus("Nenhum post para atualizar.", "error");
-            return;
-        }
-    
-        // Verifica se o lastPostId é um post local (ID >= 201)
-        const isLocalPost = lastPostId >= 201;
-    
-        if (isLocalPost) {
-            // Seleciona o elemento do post no DOM usando o data-id
-            const postElement = document.querySelector(`.post[data-id='${lastPostId}']`);
-            
-            if (postElement) {
-                // Atualiza o título e o corpo diretamente no DOM
-                const newTitle = `Post Atualizado ${lastPostId}`;
-                const newBody = "Este é o corpo atualizado do post";
-    
-                postElement.querySelector('h3').textContent = `ID ${lastPostId}: ${newTitle}`;
-                postElement.querySelector('p').textContent = newBody;
-    
-                showStatus(`Post local de ID ${lastPostId} atualizado com sucesso!`);
-            } else {
-                showStatus("Post local não encontrado no DOM.", "error");
-            }
-        } else {
-            // Caso seja um post da API, procede com a lógica original
-            const updatedPost = {
-                title: `Post Atualizado ${lastPostId}`,
-                body: "Este é o corpo atualizado do post",
-                userId: 1,
-                id: lastPostId
-            };
-    
-            fetch(`https://jsonplaceholder.typicode.com/posts/${lastPostId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedPost)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Falha na atualização do post na API.");
-                }
-                return response.json();
-            })
-            .then(post => {
-                showStatus(`Post de ID ${lastPostId} atualizado com sucesso na API!`);
-    
-                // Atualiza o post na tela
-                const postElements = document.querySelectorAll(`.post[data-id='${lastPostId}']`);
-                postElements.forEach(postElement => {
-                    postElement.innerHTML = `<h3>ID ${post.id}: ${post.title}</h3><p>${post.body}</p>`;
-                });
-            })
-            .catch(error => {
-                console.error("Erro ao atualizar post:", error);
-                showStatus("Erro ao atualizar post na API.", "error");
-            });
-        }
+
+    const titulo = document.createElement('h2');
+    titulo.textContent = nome;
+
+    const imagemElemento = document.createElement('img');
+    imagemElemento.src = imagem;
+    imagemElemento.alt = nome;
+
+    const statsContainer = document.createElement('div');
+
+    currentPokemon.stats.forEach(stat => {
+        const statElement = document.createElement('div');
+        statElement.classList.add('stats');
+
+        const statName = document.createElement('span');
+        // Formatar o nome do stat
+        const formattedStatName = formatStatName(stat.stat.name);
+        statName.textContent = `${formattedStatName}: `;
+
+        const statValue = document.createElement('span');
+        statValue.textContent = `${stat.base_stat}`;
+
+        statElement.appendChild(statName);
+        statElement.appendChild(statValue);
+
+        statsContainer.appendChild(statElement);
+    });
+
+    // Reproduzir som do Pokémon automaticamente
+    const audioElemento = document.createElement('audio');
+    audioElemento.id = 'pokemon-cry';
+
+    // URL do som do Pokémon usando o nome em minúsculas
+    const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${currentPokemon.name.toLowerCase()}.mp3`;
+    audioElemento.src = cryUrl;
+
+    // Tratar erro ao carregar o áudio
+    audioElemento.onerror = function() {
+        console.warn('Desculpe, o som deste Pokémon não está disponível.');
+    };
+
+    // Tentar reproduzir o som
+    audioElemento.play().catch(error => {
+        console.warn('Erro ao reproduzir o som:', error);
+        console.warn('O navegador pode estar bloqueando a reprodução automática de áudio.');
+    });
+
+    // Adicionar elementos ao card
+    pokemonCard.appendChild(titulo);
+    pokemonCard.appendChild(imagemElemento);
+    pokemonCard.appendChild(statsContainer);
+}
+
+function toggleShiny() {
+    // Atualiza apenas a imagem do Pokémon atual
+    if (!currentPokemon) return; // Se não houver um Pokémon atual, não faz nada
+
+    const imagemElemento = document.querySelector('#pokemon-card img');
+    if (!imagemElemento) return; // Se a imagem não estiver presente, não faz nada
+
+    const isShiny = document.getElementById('toggle-shiny').checked;
+
+    // Selecionar a imagem adequada
+    let imagem;
+    if (isShiny && currentPokemon.sprites.front_shiny) {
+        imagem = currentPokemon.sprites.front_shiny;
+    } else {
+        imagem = currentPokemon.sprites.front_default;
     }
-    
-    // Função para deletar o último post criado (DELETE)
-    function deleteLastPost() {
-        if (lastPostId == null) {
-            showStatus("Nenhum post para deletar.", "error");
-            return;
-        }
-    
-        fetch(`https://jsonplaceholder.typicode.com/posts/${lastPostId}`, {
-            method: 'DELETE'
-        })
-        .then(() => {
-            showStatus(`Último post de ID ${lastPostId} deletado com sucesso!`);
-    
-            // Remove o post da tela
-            const postElements = document.querySelectorAll(`.post[data-id='${lastPostId}']`);
-            postElements.forEach(postElement => {
-                postElement.remove();
-            });
-    
-            lastPostId--; // Reseta o ID do último post após a exclusão
-        })
-        .catch(error => {
-            console.error("Erro ao deletar post:", error);
-            showStatus("Erro ao deletar post", "error");
-        });
-    }
-    
-    // Expondo as funções ao escopo global para serem acessíveis nos onclicks
-    window.fetchPosts = fetchPosts;
-    window.createPost = createPost;
-    window.updateLastPost = updateLastPost;
-    window.deleteLastPost = deleteLastPost;
-});
+
+    imagemElemento.src = imagem;
+}
+
+function formatStatName(statName) {
+    // Substituir hífens por espaços
+    let formattedName = statName.replace(/-/g, ' ');
+    // Colocar a primeira letra de cada palavra em maiúscula
+    formattedName = formattedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return formattedName;
+}
+
+function mostrarEasterEgg() {
+    // Verifica se o Mew já foi exibido
+    if (document.getElementById('easter-egg')) return;
+    const cryUrl = `https://play.pokemonshowdown.com/audio/cries/mew.mp3`
+    const audioElemento = document.createElement('audio');
+    audioElemento.id = 'pokemon-cry';
+    const mewElement = document.createElement('img');
+    mewElement.id = 'easter-egg';
+    mewElement.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png';
+    mewElement.alt = 'Mew';
+    audioElemento.src = cryUrl
+    // Adiciona a classe para a animação
+    mewElement.classList.add('mew');
+
+    // Adiciona o Mew ao body
+    document.body.appendChild(mewElement);
+}

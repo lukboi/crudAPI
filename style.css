@@ -1,0 +1,174 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #ee1515;
+}
+
+#gerar-pokemon {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ee1515;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#gerar-pokemon:hover {
+    background-color: #cc0000;
+}
+
+label {
+    margin-left: 10px;
+    font-size: 16px;
+}
+
+input[type="checkbox"] {
+    transform: scale(1.2);
+    margin-right: 5px;
+}
+
+#pokemon-card {
+    margin: 40px auto 0;
+    width: 300px;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+#pokemon-card h2 {
+    text-transform: capitalize;
+    margin-bottom: 20px;
+}
+
+#pokemon-card img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
+    /* Animação de balanço sutil */
+    animation: sway 2s ease-in-out infinite;
+}
+
+@keyframes sway {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}
+
+.stats {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.stats span {
+    font-size: 16px;
+    color: #333;
+    margin-right: 5px;
+}
+
+/* Cores suaves baseadas no tipo do Pokémon */
+#pokemon-card.fire {
+    border-color: #F08030;
+}
+
+#pokemon-card.water {
+    border-color: #6890F0;
+}
+
+#pokemon-card.grass {
+    border-color: #78C850;
+}
+
+#pokemon-card.electric {
+    border-color: #F8D030;
+}
+
+#pokemon-card.bug {
+    border-color: #A8B820;
+}
+
+#pokemon-card.normal {
+    border-color: #A8A878;
+}
+
+#pokemon-card.poison {
+    border-color: #A040A0;
+}
+
+#pokemon-card.ground {
+    border-color: #E0C068;
+}
+
+#pokemon-card.fairy {
+    border-color: #EE99AC;
+}
+
+#pokemon-card.fighting {
+    border-color: #C03028;
+}
+
+#pokemon-card.psychic {
+    border-color: #F85888;
+}
+
+#pokemon-card.rock {
+    border-color: #B8A038;
+}
+
+#pokemon-card.ghost {
+    border-color: #705898;
+}
+
+#pokemon-card.ice {
+    border-color: #98D8D8;
+}
+
+#pokemon-card.dragon {
+    border-color: #7038F8;
+}
+
+#pokemon-card.dark {
+    border-color: #705848;
+}
+
+#pokemon-card.steel {
+    border-color: #B8B8D0;
+}
+
+#pokemon-card.flying {
+    border-color: #A890F0;
+}
+
+/* Cor padrão para outros tipos */
+#pokemon-card {
+    border-color: #ddd;
+}
+
+
+/* Estilos para o Mew (Easter Egg) */
+#easter-egg {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    height: 200px;
+    /* Animação de balanço */
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
