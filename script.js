@@ -1,156 +1,383 @@
-// Variável global para armazenar o Pokémon atual
-let currentPokemon = null;
-
-// Variável para contar o número de cliques
 let clickCount = 0;
 
-document.getElementById('gerar-pokemon').addEventListener('click', gerarPokemon);
+const pokemonList = [];
 
-// Adicionar event listener ao checkbox para alternar entre versões
-document.getElementById('toggle-shiny').addEventListener('change', toggleShiny);
+document
+  .getElementById("gerar-pokemon")
+  .addEventListener("click", gerarPokemon);
+
+document.getElementById("toggle-shiny").addEventListener("change", toggleShiny);
 
 function gerarPokemon() {
-    // Incrementa o contador de cliques
-    clickCount++;
-    console.log(clickCount);
+  clickCount++;
+  console.log(clickCount);
 
-    // Verifica se o contador atingiu 20 cliques
-    if (clickCount === 20) {
-        mostrarEasterEgg();
-    }
+  if (clickCount === 20) {
+    mostrarEasterEgg();
+  }
 
-    const pokemonId = Math.floor(Math.random() * 151) + 1; // IDs de 1 a 151
-    const apiUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+  const pokemonId = Math.floor(Math.random() * 151) + 1;
+  const apiUrl = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
 
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            currentPokemon = data; // Armazena o Pokémon atual
-            mostrarPokemon();
-        })
-        .catch(error => {
-            console.error('Erro ao obter dados do Pokémon:', error);
-        });
+  fetch(apiUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      pokemonList.push(data);
+      mostrarPokemon(data);
+    })
+    .catch((error) => {
+      console.error("Erro ao obter dados do Pokémon:", error);
+    });
 }
 
-function mostrarPokemon() {
-    if (!currentPokemon) return; // Se não houver um Pokémon atual, não faz nada
+function mostrarPokemon(pokemon) {
+  const pokemonContainer = document.querySelector(".pokemon-container");
 
-    const pokemonCard = document.getElementById('pokemon-card');
-    pokemonCard.innerHTML = '';
-    pokemonCard.className = ''; // Remove classes anteriores
+  const pokemonCard = document.createElement("div");
+  pokemonCard.classList.add("pokemon-card");
 
-    const nome = currentPokemon.name;
-    const types = currentPokemon.types.map(typeInfo => typeInfo.type.name);
+  const nome = pokemon.name;
+  const types = pokemon.types.map((typeInfo) => typeInfo.type.name);
 
-    // Adiciona a classe do tipo principal do Pokémon ao card
-    pokemonCard.classList.add(types[0]);
+  pokemonCard.classList.add(types[0]);
 
-    // Obter o valor do checkbox shiny
-    const isShiny = document.getElementById('toggle-shiny').checked;
+  const isShiny = document.getElementById("toggle-shiny").checked;
 
-    // Selecionar a imagem adequada
-    let imagem;
-    if (isShiny && currentPokemon.sprites.front_shiny) {
-        imagem = currentPokemon.sprites.front_shiny;
-    } else {
-        imagem = currentPokemon.sprites.front_default;
-    }
+  let imagem =
+    isShiny && pokemon.sprites.front_shiny
+      ? pokemon.sprites.front_shiny
+      : pokemon.sprites.front_default;
 
-    const titulo = document.createElement('h2');
-    titulo.textContent = nome;
+  const titulo = document.createElement("h2");
+  titulo.textContent = nome;
 
-    const imagemElemento = document.createElement('img');
-    imagemElemento.src = imagem;
-    imagemElemento.alt = nome;
+  const imagemElemento = document.createElement("img");
+  imagemElemento.src = imagem;
+  imagemElemento.alt = nome;
 
-    const statsContainer = document.createElement('div');
+  const statsContainer = document.createElement("div");
 
-    currentPokemon.stats.forEach(stat => {
-        const statElement = document.createElement('div');
-        statElement.classList.add('stats');
+  pokemon.stats.forEach((stat) => {
+    const statElement = document.createElement("div");
+    statElement.classList.add("stats");
 
-        const statName = document.createElement('span');
-        // Formatar o nome do stat
-        const formattedStatName = formatStatName(stat.stat.name);
-        statName.textContent = `${formattedStatName}: `;
+    const statName = document.createElement("span");
+    const formattedStatName = formatStatName(stat.stat.name);
+    statName.textContent = `${formattedStatName}: `;
 
-        const statValue = document.createElement('span');
-        statValue.textContent = `${stat.base_stat}`;
+    const statValue = document.createElement("span");
+    statValue.textContent = `${stat.base_stat}`;
 
-        statElement.appendChild(statName);
-        statElement.appendChild(statValue);
+    statElement.appendChild(statName);
+    statElement.appendChild(statValue);
 
-        statsContainer.appendChild(statElement);
-    });
+    statsContainer.appendChild(statElement);
+  });
 
-    // Reproduzir som do Pokémon automaticamente
-    const audioElemento = document.createElement('audio');
-    audioElemento.id = 'pokemon-cry';
+  const audioElemento = document.createElement("audio");
+  audioElemento.id = "pokemon-cry";
+  const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemon.name.toLowerCase()}.mp3`;
+  audioElemento.src = cryUrl;
+  audioElemento.onerror = function () {
+    console.warn("Desculpe, o som deste Pokémon não está disponível.");
+  };
+  audioElemento.play().catch((error) => {
+    console.warn("Erro ao reproduzir o som:", error);
+    console.warn(
+      "O navegador pode estar bloqueando a reprodução automática de áudio."
+    );
+  });
 
-    // URL do som do Pokémon usando o nome em minúsculas
-    const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${currentPokemon.name.toLowerCase()}.mp3`;
-    audioElemento.src = cryUrl;
+  const deleteButton = document.createElement("button");
+  deleteButton.classList.add(
+    "delete-button",
+    "text-white",
+    "bg-red-600",
+    "hover:bg-red-800",
+    "p-2",
+    "rounded-full",
+    "transition",
+    "transform",
+    "hover:scale-110",
+    "shadow-lg"
+  );
+  deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+  deleteButton.onclick = () => {
+    removerPokemon(pokemonCard, pokemon);
+  };
 
-    // Tratar erro ao carregar o áudio
-    audioElemento.onerror = function() {
-        console.warn('Desculpe, o som deste Pokémon não está disponível.');
-    };
+  const editButton = document.createElement("button");
+  editButton.classList.add(
+    "edit-button",
+    "text-white",
+    "bg-blue-600",
+    "hover:bg-blue-800",
+    "px-4",
+    "py-2",
+    "rounded",
+    "transition",
+    "hover:scale-105",
+    "shadow-md"
+  );
+  editButton.innerHTML = '<i class="fas fa-edit"></i> Editar';
+  editButton.onclick = () => {
+    editarPokemon(pokemonCard, pokemon, titulo, imagemElemento, statsContainer);
+  };
 
-    // Tentar reproduzir o som
-    audioElemento.play().catch(error => {
-        console.warn('Erro ao reproduzir o som:', error);
-        console.warn('O navegador pode estar bloqueando a reprodução automática de áudio.');
-    });
+  pokemonCard.appendChild(deleteButton);
+  pokemonCard.appendChild(editButton);
+  pokemonCard.appendChild(titulo);
+  pokemonCard.appendChild(imagemElemento);
+  pokemonCard.appendChild(statsContainer);
 
-    // Adicionar elementos ao card
-    pokemonCard.appendChild(titulo);
-    pokemonCard.appendChild(imagemElemento);
-    pokemonCard.appendChild(statsContainer);
+  pokemonContainer.appendChild(pokemonCard);
 }
 
 function toggleShiny() {
-    // Atualiza apenas a imagem do Pokémon atual
-    if (!currentPokemon) return; // Se não houver um Pokémon atual, não faz nada
+  const pokemonContainer = document.getElementById("pokemon-card");
+  const isShiny = document.getElementById("toggle-shiny").checked;
 
-    const imagemElemento = document.querySelector('#pokemon-card img');
-    if (!imagemElemento) return; // Se a imagem não estiver presente, não faz nada
-
-    const isShiny = document.getElementById('toggle-shiny').checked;
-
-    // Selecionar a imagem adequada
-    let imagem;
-    if (isShiny && currentPokemon.sprites.front_shiny) {
-        imagem = currentPokemon.sprites.front_shiny;
-    } else {
-        imagem = currentPokemon.sprites.front_default;
-    }
+  Array.from(pokemonContainer.children).forEach((card, index) => {
+    const pokemon = pokemonList[index];
+    const imagemElemento = card.querySelector("img");
+    let imagem =
+      isShiny && pokemon.sprites.front_shiny
+        ? pokemon.sprites.front_shiny
+        : pokemon.sprites.front_default;
 
     imagemElemento.src = imagem;
+  });
 }
 
 function formatStatName(statName) {
-    // Substituir hífens por espaços
-    let formattedName = statName.replace(/-/g, ' ');
-    // Colocar a primeira letra de cada palavra em maiúscula
-    formattedName = formattedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    return formattedName;
+  let formattedName = statName.replace(/-/g, " ");
+  formattedName = formattedName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+  return formattedName;
 }
 
 function mostrarEasterEgg() {
-    // Verifica se o Mew já foi exibido
-    if (document.getElementById('easter-egg')) return;
-    const cryUrl = `https://play.pokemonshowdown.com/audio/cries/mew.mp3`
-    const audioElemento = document.createElement('audio');
-    audioElemento.id = 'pokemon-cry';
-    const mewElement = document.createElement('img');
-    mewElement.id = 'easter-egg';
-    mewElement.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png';
-    mewElement.alt = 'Mew';
-    audioElemento.src = cryUrl
-    // Adiciona a classe para a animação
-    mewElement.classList.add('mew');
+  if (document.getElementById("easter-egg")) return;
+  const cryUrl = `https://play.pokemonshowdown.com/audio/cries/mew.mp3`;
+  const audioElemento = document.createElement("audio");
+  audioElemento.id = "pokemon-cry";
+  const mewElement = document.createElement("img");
+  mewElement.id = "easter-egg";
+  mewElement.src =
+    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png";
+  mewElement.alt = "Mew";
+  audioElemento.src = cryUrl;
 
-    // Adiciona o Mew ao body
-    document.body.appendChild(mewElement);
+  mewElement.classList.add("mew");
+
+  document.body.appendChild(mewElement);
+}
+
+function removerPokemon(pokemonCard, pokemon) {
+  pokemonCard.remove();
+
+  const index = pokemonList.indexOf(pokemon);
+  if (index > -1) {
+    pokemonList.splice(index, 1);
+  }
+}
+
+function editarPokemon(
+  pokemonCard,
+  pokemon,
+  titulo,
+  imagemElemento,
+  statsContainer
+) {
+  const nomeInput = document.createElement("input");
+  nomeInput.type = "text";
+  nomeInput.value = titulo.textContent;
+  nomeInput.classList.add(
+    "p-2",
+    "border",
+    "border-gray-300",
+    "rounded-md",
+    "focus:outline-none",
+    "focus:ring-2",
+    "focus:ring-blue-500",
+    "w-full",
+    "mb-4"
+  );
+
+  const imagemSelect = document.createElement("select");
+  imagemSelect.classList.add(
+    "p-2",
+    "border",
+    "border-gray-300",
+    "rounded-md",
+    "focus:outline-none",
+    "focus:ring-2",
+    "focus:ring-blue-500",
+    "w-full",
+    "mb-4"
+  );
+
+  const normalOption = document.createElement("option");
+  normalOption.value = "normal";
+  normalOption.textContent = "Normal";
+
+  const shinyOption = document.createElement("option");
+  shinyOption.value = "shiny";
+  shinyOption.textContent = "Shiny";
+
+  imagemSelect.appendChild(normalOption);
+  imagemSelect.appendChild(shinyOption);
+  imagemSelect.value =
+    imagemElemento.src === pokemon.sprites.front_shiny ? "shiny" : "normal";
+
+  const statsInputs = [];
+  pokemon.stats.forEach((stat, index) => {
+    const statInput = document.createElement("input");
+    statInput.type = "number";
+    statInput.value = stat.base_stat;
+    statInput.classList.add(
+      "p-2",
+      "border",
+      "border-gray-300",
+      "rounded-md",
+      "focus:outline-none",
+      "focus:ring-2",
+      "focus:ring-blue-500",
+      "w-full",
+      "mb-2"
+    );
+    statsInputs.push(statInput);
+  });
+
+  pokemonCard.innerHTML = "";
+  pokemonCard.appendChild(nomeInput);
+  pokemonCard.appendChild(imagemSelect);
+
+  statsContainer.innerHTML = "";
+  statsInputs.forEach((input, index) => {
+    const statLabel = document.createElement("label");
+    statLabel.textContent = `${formatStatName(
+      pokemon.stats[index].stat.name
+    )}: `;
+    statLabel.classList.add("font-medium", "text-gray-700", "mb-1", "block");
+
+    statLabel.appendChild(input);
+    statsContainer.appendChild(statLabel);
+  });
+  pokemonCard.appendChild(statsContainer);
+
+  // Botão de salvar
+  const saveButton = document.createElement("button");
+  saveButton.textContent = "Salvar";
+  saveButton.classList.add(
+    "bg-blue-600",
+    "text-white",
+    "hover:bg-blue-800",
+    "px-6",
+    "py-3",
+    "rounded-lg",
+    "transition",
+    "duration-200",
+    "transform",
+    "hover:scale-105",
+    "w-full",
+    "mt-4"
+  );
+  saveButton.onclick = () => {
+    salvarEdicao(
+      pokemon,
+      nomeInput,
+      imagemSelect,
+      statsInputs,
+      titulo,
+      imagemElemento,
+      statsContainer,
+      pokemonCard
+    );
+  };
+  pokemonCard.appendChild(saveButton);
+}
+
+function salvarEdicao(
+  pokemon,
+  nomeInput,
+  imagemSelect,
+  statsInputs,
+  titulo,
+  imagemElemento,
+  statsContainer,
+  pokemonCard
+) {
+  titulo.textContent = nomeInput.value;
+  imagemElemento.src =
+    imagemSelect.value === "shiny"
+      ? pokemon.sprites.front_shiny
+      : pokemon.sprites.front_default;
+
+  pokemon.stats.forEach((stat, index) => {
+    stat.base_stat = statsInputs[index].value;
+  });
+
+  statsContainer.innerHTML = "";
+  pokemon.stats.forEach((stat) => {
+    const statElement = document.createElement("div");
+    statElement.classList.add("stats");
+
+    const statName = document.createElement("span");
+    const formattedStatName = formatStatName(stat.stat.name);
+    statName.textContent = `${formattedStatName}: `;
+
+    const statValue = document.createElement("span");
+    statValue.textContent = `${stat.base_stat}`;
+
+    statElement.appendChild(statName);
+    statElement.appendChild(statValue);
+
+    statsContainer.appendChild(statElement);
+  });
+
+  const deleteButton = document.createElement("button");
+  deleteButton.classList.add(
+    "delete-button",
+    "text-white",
+    "bg-red-600",
+    "hover:bg-red-800",
+    "p-2",
+    "rounded-full",
+    "transition",
+    "transform",
+    "hover:scale-110",
+    "shadow-lg"
+  );
+  deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+  deleteButton.onclick = () => {
+    removerPokemon(pokemonCard, pokemon);
+  };
+
+  const editButton = document.createElement("button");
+  editButton.classList.add(
+    "edit-button",
+    "text-white",
+    "bg-blue-600",
+    "hover:bg-blue-800",
+    "px-4",
+    "py-2",
+    "rounded",
+    "transition",
+    "hover:scale-105",
+    "shadow-md"
+  );
+  editButton.innerHTML = '<i class="fas fa-edit"></i> Editar';
+  editButton.onclick = () => {
+    editarPokemon(pokemonCard, pokemon, titulo, imagemElemento, statsContainer);
+  };
+
+  pokemonCard.innerHTML = "";
+  pokemonCard.appendChild(deleteButton);
+  pokemonCard.appendChild(editButton);
+  pokemonCard.appendChild(titulo);
+  pokemonCard.appendChild(imagemElemento);
+  pokemonCard.appendChild(statsContainer);
 }

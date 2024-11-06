@@ -1,24 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>PokéCRUD</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="icon" href="/public/snorlax.png" type="image/x-icon" />
+  </head>
+  <body class="bg-gradient-to-r from-yellow-400 via-red-400 to-blue-500">
+    <h1
+      class="font-bold text-4xl text-center text-red-800 font-bold mt-10 mb-8 drop-shadow-lg"
+    >
+      PokéCRUD
+    </h1>
 
-    <h1>PokéCRUD</h1>
-
-    <button id="gerar-pokemon">Gerar Pokémon Aleatório</button>
-
-    <label>
-        <input type="checkbox" id="toggle-shiny"> Ver versão Shiny
-    </label>
-
-    <div id="pokemon-card">
-        <!-- O card do Pokémon será inserido aqui pelo JavaScript -->
+    <div class="flex justify-center mb-6">
+      <button
+        id="gerar-pokemon"
+        class="font-semibold text-white bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-600 rounded-full px-8 py-4 shadow-lg transform transition duration-300 hover:scale-110 hover:bg-gradient-to-l focus:outline-none focus:ring-4 focus:ring-yellow-500 focus:ring-opacity-50"
+      >
+        Gerar Pokémon Aleatório
+      </button>
     </div>
 
+    <div class="flex justify-center items-center mb-8">
+      <label for="toggle-shiny" class="text-xl font-medium text-gray-700 mr-2">
+        <i class="fas fa-star text-yellow-400"></i> Ver versão Shiny
+      </label>
+      <input type="checkbox" id="toggle-shiny" class="transform scale-150" />
+    </div>
+
+    <div
+      class="pokemon-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4"
+    ></div>
+
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
